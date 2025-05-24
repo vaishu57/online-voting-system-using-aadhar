@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Online Voting System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #2E86C1;
+        }
+
+        h2 {
+            color: #333333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #2E86C1;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1C6C92;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2E86C1;
+            color: white;
+        }
+        .candidate {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0; /* Adds vertical spacing between candidates */
+            padding: 10px;
+            border: 1px solid #ddd; /* Optional: adds a border around each candidate */
+            border-radius: 5px; /* Rounded corners */
+            background-color: #f9f9f9; /* Light background color */
+        }
+        
+        .candidate button {
+            margin-left: 10px; /* Space between candidate name and button */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Indian Online Voting System</h1>
+        <div id="voting-section">
+            <div id="login-step">
+                <h2>Welcome! Click below to begin voting</h2>
+                <button id="start-voting-btn">Start Voting</button>
+            </div>
+
+            <div id="step-1" style="display:none;">
+                <h2>Serial No: <span id="serial-number">1</span></h2>
+                <h2>Step 1: Enter Aadhaar Number</h2>
+                <input type="text" id="aadhar-input" placeholder="Enter Aadhaar Number" />
+                <button id="check-voter-btn">Check Voter</button>
+            </div>
+
+            <div id="step-2" style="display:none;">
+                <h2>User Details</h2>
+                <img id="user-image" src="" alt="User Image" style="width: 150px; height: 150px; border-radius: 75px;" />
+                <p><strong>Name:</strong> <span id="user-name"></span></p>
+                <p><strong>Aadhaar Number:</strong> <span id="user-aadhar"></span></p>
+                <p><strong>Address:</strong> <span id="user-address"></span></p>
+                <h2>Are you ready to vote?</h2>
+                <button id="confirm-vote-btn">Yes, I want to vote</button>
+            </div>
+
+            <div id="candidates-section" style="display:none;">
+                <h2>Select a Candidate</h2>
+                <div id="candidates-list"></div>
+            </div>
+
+            <div id="result-section" style="display:none;">
+                <h2>Thank you for voting!</h2>
+                <p id="result-message"></p>
+                <button id="show-results-btn">Show Results</button>
+            </div>
+
+            <div id="login-results" style="display:none;">
+                <h2>Enter Password to View Results</h2>
+                <input type="text" id="admin-password" placeholder="Enter Password" />
+                <button id="check-password-btn">Check Password</button>
+            </div>
+
+            <div id="results-table" style="display:none;">
+                <h2>Results</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Votes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+
+            <div id="voters-table" style="display:none;">
+                <h2>Voters List</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Serial No</th>
+                            <th>Voted For</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voters-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const users = {
+            "123456789012": { 
+                name: "Rahul Sharma", 
+                aadhar: "123456789012", 
+                address: "Guntur", 
+                hasVoted: false,
+                image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Prime_Minister_Of_Bharat_Shri_Narendra_Damodardas_Modi_with_Shri_Rohit_Gurunath_Sharma_%28Cropped%29.jpg"
+            },
+            "987654321098": { 
+                name: "Priya Singh", 
+                aadhar: "987654321098", 
+                address: "Vijayawada", 
+                hasVoted: false,
+                image: "https://upload.wikimedia.org/wikipedia/commons/7/73/PV_Sindhu_headshot.jpg"
+            },
+            "22FE1A423742": { 
+                name: "Pathan Ruksana Khathun", 
+                aadhar: "22FE1A423742", 
+                address: "Tenali", 
+                hasVoted: false,
+                image: "https://cdn.britannica.com/25/222725-050-170F622A/Indian-cricketer-Mahendra-Singh-Dhoni-2011.jpg"
+            },
+            "556677889900": { 
+                name: "Ajay Kumar", 
+                aadhar: "556677889900", 
+                address: "Hyderabad", 
+                hasVoted: false,
+                image: "https://www.hindustantimes.com/static-content/1y/cricket-logos/players/virat-kohli.png"
+            }
+        };
+    
+        const candidates = [
+            { id: 0, name: "Janasena", symbol: "🥛", votes: 0 },
+            { id: 1, name: "YSRCP", symbol: "🏴", votes: 0 },
+            { id: 2, name: "Congress", symbol: "✋", votes: 0 }
+        ];
+    
+        let currentUser = null;
+        let serialNumber = 1;
+        let voteCount = 0; // Initialize vote count
+        const correctPassword = "admin123"; // Set your password here
+
+        function updateSerialNumber() {
+            document.getElementById("serial-number").innerText = serialNumber;
+        }
+    
+        function checkVoter() {
+            const aadharNumber = document.getElementById("aadhar-input").value;
+            if (aadharNumber && users[aadharNumber]) {
+                currentUser = users[aadharNumber];
+                if (!currentUser.hasVoted) {
+                    document.getElementById("step-1").style.display = "none";
+                    document.getElementById("step-2").style.display = "block";
+                    document.getElementById("user-name").innerText = currentUser.name;
+                    document.getElementById("user-aadhar").innerText = currentUser.aadhar;
+                    document.getElementById("user-address").innerText = currentUser.address;
+                    document.getElementById("user-image").src = currentUser.image; // Set the image source
+                } else {
+                    alert("You have already voted!");
+                    document.getElementById("aadhar-input").value = "";
+                }
+            } else {
+                alert("Aadhaar number not found. Please enter a valid number.");
+                document.getElementById("aadhar-input").value = "";
+            }
+        }
+    
+        function displayCandidates() {
+            document.getElementById("step-2").style.display = "none";
+            const candidatesList = document.getElementById("candidates-list");
+            candidatesList.innerHTML = "";
+            candidates.forEach(candidate => {
+                const candidateDiv = document.createElement("div");
+                candidateDiv.classList.add("candidate");
+                candidateDiv.innerHTML = `  
+                    <span>${candidate.name} ${candidate.symbol}</span> 
+                    <button onclick="selectCandidate(${candidate.id})">Select</button>
+                `;
+                candidatesList.appendChild(candidateDiv);
+            });
+            document.getElementById("candidates-section").style.display = "block";
+        }
+    
+        function selectCandidate(candidateId) {
+            if (!currentUser.hasVoted) {
+                currentUser.hasVoted = true;
+                candidates[candidateId].votes += 1;
+                voteCount++; // Increment the vote count
+                document.getElementById("candidates-section").style.display = "none";
+                document.getElementById("result-section").style.display = "block";
+                document.getElementById("result-message").innerText = `You have successfully voted for ${candidates[candidateId].name}!`;
+
+                updateResultsTable();
+                updateVotersTable(candidateId);
+
+                serialNumber++;
+                updateSerialNumber();
+
+                // Check if the vote count has reached 4
+                if (voteCount >= 4) {
+                    alert("The voting session has ended. Please enter the password to view results.");
+                    document.getElementById("login-results").style.display = "block"; // Show password prompt
+                    document.getElementById("results-table").style.display = "none"; // Hide results initially
+                } else {
+                    setTimeout(() => {
+                        resetForNextVoter();
+                    }, 3000);
+                }
+            } else {
+                alert("You have already voted!");
+            }
+        }
+    
+        function checkPassword() {
+            const enteredPassword = document.getElementById("admin-password").value;
+            if (enteredPassword === correctPassword) {
+                document.getElementById("results-table").style.display = "block"; // Show results
+                document.getElementById("voters-table").style.display = "block"; // Show voters table
+                document.getElementById("login-results").style.display = "none"; // Hide password prompt
+            } else {
+                alert("Incorrect password. Please try again.");
+            }
+        }
+    
+        function updateResultsTable() {
+            const resultsBody = document.getElementById("results-body");
+            resultsBody.innerHTML = ""; // Clear existing results
+            candidates.forEach(candidate => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${candidate.name}</td>
+                    <td>${candidate.votes}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+        }
+    
+        function updateVotersTable(candidateId) {
+            const votersBody = document.getElementById("voters-body");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${serialNumber}</td>
+                <td>${candidates[candidateId].name}</td>
+            `;
+            votersBody.appendChild(row);
+            document.getElementById("voters-table").style.display = "none"; // Hide initially
+        }
+    
+        function resetForNextVoter() {
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("step-1").style.display = "block";
+            document.getElementById("aadhar-input").value = "";
+            currentUser = null;
+        }
+    
+        document.getElementById("start-voting-btn").addEventListener("click", () => {
+            document.getElementById("login-step").style.display = "none";
+            document.getElementById("step-1").style.display = "block";
+            updateSerialNumber();
+        });
+    
+        document.getElementById("check-voter-btn").addEventListener("click", checkVoter);
+        document.getElementById("confirm-vote-btn").addEventListener("click", displayCandidates);
+        document.getElementById("show-results-btn").addEventListener("click", () => {
+            document.getElementById("login-results").style.display = "block"; // Show password prompt
+        });
+        document.getElementById("check-password-btn").addEventListener("click", checkPassword);
+    </script>
+</body>
+</html>
